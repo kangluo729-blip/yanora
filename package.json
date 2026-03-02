@@ -1,20 +1,14 @@
 {
   "name": "yanora-clinic-system",
   "version": "1.0.0",
-  "description": "Yanora 美容诊所管理系统 - 完整的预约和管理解决方案",
+  "description": "Yanora 美容诊所管理系统 - 使用 Supabase 后端的完整预约和管理解决方案",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "npm run dev --prefix project",
     "build": "npm run build --prefix project",
     "preview": "npm run preview --prefix project",
-    "server": "npm start --prefix project/server",
-    "server:dev": "npm run dev --prefix project/server",
-    "install:all": "npm install && cd project && npm install && cd server && npm install",
-    "db:init": "node project/server/database/init.js",
-    "db:backup": "node project/server/scripts/backup-db.js",
-    "admin:create": "node project/server/create-admin.js",
-    "start:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "install:all": "npm install && cd project && npm install",
     "lint": "npm run lint --prefix project"
   },
   "keywords": [
@@ -22,14 +16,10 @@
     "booking",
     "management",
     "react",
-    "nodejs",
-    "postgresql"
+    "supabase"
   ],
   "author": "Yanora Team",
   "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
