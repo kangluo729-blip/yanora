@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: yanora-db
+    environment:
+      POSTGRES_DB: yanora_db
+      POSTGRES_USER: yanora_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - yanora-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: yanora-api
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: yanora_db
+      DB_USER: yanora_user
+      DB_PASSWORD: ${DB_PASSWORD:-your_secure_password}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./public/uploads:/app/../public/uploads
+    networks:
+      - yanora-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  yanora-network:
+    driver: bridge

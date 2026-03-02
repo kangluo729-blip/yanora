@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:14-alpine
+    container_name: yanora-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: yanora_db
+      POSTGRES_USER: yanora_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yanora123456}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./project/server/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - yanora-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yanora_user -d yanora_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 后端 API
+  api:
+    build:
+      context: ./project/server
+      dockerfile: Dockerfile
+    container_name: yanora-api
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: yanora_db
+      DB_USER: yanora_user
+      DB_PASSWORD: ${DB_PASSWORD:-yanora123456}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./project/public/uploads:/app/public/uploads
+    networks:
+      - yanora-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 前端（使用 Nginx）
+  frontend:
+    build:
+      context: ./project
+      dockerfile: Dockerfile
+    container_name: yanora-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - api
+    networks:
+      - yanora-network
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  yanora-network:
+    driver: bridge
+
