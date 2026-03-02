@@ -5,6 +5,8 @@ interface ImageCompareSliderProps {
   afterImage?: string;
   beforeLabel?: string;
   afterLabel?: string;
+  altBefore?: string;
+  altAfter?: string;
   initialPosition?: number;
 }
 
